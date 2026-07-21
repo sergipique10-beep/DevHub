@@ -1,0 +1,26 @@
+cliente_email,freelancer_email,proyecto_titulo,servicio_titulo,monto,estado,metodoPago,fecha
+sofia.vidal@devhub-mail.com,pol.molina@devhub-mail.com,,Configuracion de CI/CD,1981,Completada,Transferencia,2026-08-29
+sofia.vidal@devhub-mail.com,paula.martinez@devhub-mail.com,Red social de nicho,,5393,Pendiente,Transferencia,2026-07-19
+cristina.romero@devhub-mail.com,pau.camps@devhub-mail.com,Portal de noticias,,3575,Completada,PayPal,2026-02-12
+dani.castro@devhub-mail.com,hugo.ferrer@devhub-mail.com,Marketplace de segunda mano,,5705,Completada,Stripe,2026-07-04
+oriol.delgado@devhub-mail.com,david.ortega@devhub-mail.com,,Diseno de base de datos,1288,Completada,Tarjeta,2026-12-10
+cristina.romero@devhub-mail.com,pau.camps@devhub-mail.com,Portal de noticias,,3575,Completada,PayPal,2026-11-15
+noa.camps@devhub-mail.com,laura.roca@devhub-mail.com,App de delivery de comida,,1298,Completada,Tarjeta,2026-10-23
+dani.castro@devhub-mail.com,hugo.ferrer@devhub-mail.com,Marketplace de segunda mano,,5705,Completada,Tarjeta,2026-04-21
+dani.castro@devhub-mail.com,adrian.ortega@devhub-mail.com,,Integracion de pasarela de pago,664,Reembolsada,Tarjeta,2026-05-14
+victor.romero@devhub-mail.com,david.ortega@devhub-mail.com,,Chatbot con IA,1274,Pendiente,Stripe,2026-04-05
+noa.camps@devhub-mail.com,adrian.ortega@devhub-mail.com,,App movil multiplataforma,1192,Reembolsada,Transferencia,2026-09-11
+marina.puig@devhub-mail.com,irene.pons@devhub-mail.com,,Bot de Discord/Slack,1580,Pendiente,Stripe,2026-08-26
+carla.lopez@devhub-mail.com,elena.perez@devhub-mail.com,,Desarrollo de API REST completa,316,Reembolsada,Transferencia,2026-05-16
+cristina.romero@devhub-mail.com,clara.torres@devhub-mail.com,Sistema de tickets de soporte,,7861,Pendiente,PayPal,2026-02-12
+eric.torres@devhub-mail.com,marc.puig@devhub-mail.com,Directorio de profesionales,,7044,Completada,PayPal,2026-09-11
+eric.torres@devhub-mail.com,marc.puig@devhub-mail.com,Directorio de profesionales,,7044,Completada,Tarjeta,2026-08-15
+bruno.perez@devhub-mail.com,irene.pons@devhub-mail.com,App de fitness y nutricion,,1916,Pendiente,Transferencia,2026-01-08
+gerard.reyes@devhub-mail.com,nuria.delgado@devhub-mail.com,,Bot de Discord/Slack,1210,Pendiente,Stripe,2026-08-08
+alba.camps@devhub-mail.com,nuria.delgado@devhub-mail.com,App de delivery de comida,,6511,Pendiente,Transferencia,2026-12-10
+gerard.reyes@devhub-mail.com,clara.torres@devhub-mail.com,,Panel de analitica en tiempo real,1016,Pendiente,Stripe,2026-11-09
+carla.lopez@devhub-mail.com,clara.torres@devhub-mail.com,Comparador de precios,,5367,Completada,Stripe,2026-11-08
+mario.vila@devhub-mail.com,elena.perez@devhub-mail.com,,Desarrollo de API REST completa,316,Completada,Tarjeta,2026-08-30
+eric.torres@devhub-mail.com,marc.puig@devhub-mail.com,Directorio de profesionales,,7044,Completada,Tarjeta,2026-12-01
+carla.lopez@devhub-mail.com,clara.torres@devhub-mail.com,Comparador de precios,,5367,Completada,Stripe,2026-05-08
+mario.vila@devhub-mail.com,aina.delgado@devhub-mail.com,,Sistema de notificaciones push,501,Completada,Stripe,2026-03-05
