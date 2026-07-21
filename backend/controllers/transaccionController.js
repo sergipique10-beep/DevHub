@@ -1,5 +1,7 @@
 const Transaccion = require("../models/Transaccion");
 const Proyecto = require("../models/Proyecto");
+const Usuario = require("../models/Usuario");
+const Servicio = require("../models/Servicio");
 
 // GET /api/transacciones (solo Admin)
 const getTransacciones = async (req, res, next) => {
@@ -38,18 +40,31 @@ const getTransaccionesPorUsuario = async (req, res, next) => {
 // POST /api/transacciones
 const crearTransaccion = async (req, res, next) => {
   try {
-    const { proyecto_id } = req.body;
+    const { cliente_id, freelancer_id, proyecto_id, servicio_id } = req.body;
 
-    if (proyecto_id) {
-      const proyecto = await Proyecto.findById(proyecto_id);
-      if (!proyecto) {
-        return res.status(404).json({ error: "Proyecto no encontrado" });
-      }
-      if (!proyecto.freelancer_asignado_id) {
-        return res
-          .status(400)
-          .json({ error: "El proyecto debe tener un freelancer asignado para generar una transacción" });
-      }
+    const [cliente, freelancer, proyecto, servicio] = await Promise.all([
+      Usuario.findById(cliente_id),
+      Usuario.findById(freelancer_id),
+      proyecto_id ? Proyecto.findById(proyecto_id) : null,
+      servicio_id ? Servicio.findById(servicio_id) : null,
+    ]);
+
+    if (!cliente) {
+      return res.status(404).json({ error: "El cliente indicado no existe" });
+    }
+    if (!freelancer) {
+      return res.status(404).json({ error: "El freelancer indicado no existe" });
+    }
+    if (proyecto_id && !proyecto) {
+      return res.status(404).json({ error: "Proyecto no encontrado" });
+    }
+    if (proyecto && !proyecto.freelancer_asignado_id) {
+      return res
+        .status(400)
+        .json({ error: "El proyecto debe tener un freelancer asignado para generar una transacción" });
+    }
+    if (servicio_id && !servicio) {
+      return res.status(404).json({ error: "Servicio no encontrado" });
     }
 
     const transaccion = await Transaccion.create(req.body);
