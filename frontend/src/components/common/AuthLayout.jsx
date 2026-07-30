@@ -1,6 +1,7 @@
 import styled from "styled-components";
-import { FiCode } from "react-icons/fi";
-import { Card, GradientText } from "../../styles/ui";
+import { Card } from "../../styles/ui";
+import Logo from "./Logo";
+import SplineBackground from "./SplineBackground";
 
 const Wrapper = styled.div`
   position: relative;
@@ -32,26 +33,17 @@ const Content = styled.div`
 
 const Brand = styled.div`
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-family: ${({ theme }) => theme.font.heading};
-  font-weight: 700;
-  font-size: 1.6rem;
   margin-bottom: ${({ theme }) => theme.spacing(3)};
-
-  svg {
-    color: ${({ theme }) => theme.colors.accentCyan};
-    filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.6));
-  }
 `;
 
 const AuthLayout = ({ children }) => (
   <Wrapper>
+    <SplineBackground />
     <Glow />
     <Content>
       <Brand>
-        <FiCode size={28} /> <GradientText>DevHub</GradientText>
+        <Logo size={40} />
       </Brand>
       <Card>{children}</Card>
     </Content>
