@@ -13,13 +13,44 @@ const Portfolio = require("../models/Portfolio");
 const Post = require("../models/Post");
 
 const DATA_DIR = path.join(__dirname, "data");
+const EXCEL = path.join(DATA_DIR, "devhub-datos.xlsx");
 
-// --- Helpers de parseo de CSV ---
+// --- Lectura de los datos semilla ---
 
-const leerCSV = (nombreArchivo) => {
-  const ruta = path.join(DATA_DIR, nombreArchivo);
+// El Excel es la fuente principal: una hoja por colección. Los CSV se
+// mantienen como respaldo por si alguien trabaja sin el .xlsx delante.
+let libro = null;
+if (fs.existsSync(EXCEL)) {
+  libro = require("xlsx").readFile(EXCEL);
+  console.log(`Leyendo datos de ${path.basename(EXCEL)} (${libro.SheetNames.length} hojas)`);
+} else {
+  console.log("No se encontró devhub-datos.xlsx, se usarán los CSV de respaldo.");
+}
+
+// Todo llega como string recortado, igual que hacía el parser de CSV: los
+// helpers de más abajo (listaDesde, esVerdadero...) asumen texto.
+const aTexto = (fila) =>
+  Object.fromEntries(
+    Object.entries(fila).map(([clave, valor]) => [
+      clave,
+      valor === null || valor === undefined ? "" : String(valor).trim(),
+    ])
+  );
+
+const leerHoja = (nombre) => {
+  if (libro) {
+    const hoja = libro.Sheets[nombre];
+    if (!hoja) {
+      console.warn(`⚠️  El Excel no tiene la hoja "${nombre}", se omite esa colección.`);
+      return [];
+    }
+    const { utils } = require("xlsx");
+    return utils.sheet_to_json(hoja, { defval: "", raw: false }).map(aTexto);
+  }
+
+  const ruta = path.join(DATA_DIR, `${nombre}.csv`);
   if (!fs.existsSync(ruta)) {
-    console.warn(`⚠️  No se encontró ${nombreArchivo} en seeds/data/, se omite esa colección.`);
+    console.warn(`⚠️  No se encontró ${nombre}.csv en seeds/data/, se omite esa colección.`);
     return [];
   }
   const contenido = fs.readFileSync(ruta, "utf-8");
@@ -66,7 +97,7 @@ const seed = async () => {
   const mapaServicios = new Map(); // "freelancer_email||titulo" -> _id
 
   // 1. Usuarios
-  const filasUsuarios = leerCSV("usuarios.csv");
+  const filasUsuarios = leerHoja("usuarios");
   for (const fila of filasUsuarios) {
     const usuario = await Usuario.create({
       email: fila.email,
@@ -94,7 +125,7 @@ const seed = async () => {
   console.log(`Usuarios insertados: ${filasUsuarios.length}`);
 
   // 2. Servicios
-  const filasServicios = leerCSV("servicios.csv");
+  const filasServicios = leerHoja("servicios");
   for (const fila of filasServicios) {
     const freelancer_id = mapaUsuarios.get(fila.freelancer_email);
     if (!freelancer_id) {
@@ -116,7 +147,7 @@ const seed = async () => {
   console.log(`Servicios insertados: ${filasServicios.length}`);
 
   // 3. Proyectos
-  const filasProyectos = leerCSV("proyectos.csv");
+  const filasProyectos = leerHoja("proyectos");
   for (const fila of filasProyectos) {
     const cliente_id = mapaUsuarios.get(fila.cliente_email);
     if (!cliente_id) {
@@ -142,7 +173,7 @@ const seed = async () => {
   console.log(`Proyectos insertados: ${filasProyectos.length}`);
 
   // 4. Portfolio
-  const filasPortfolio = leerCSV("portfolio.csv");
+  const filasPortfolio = leerHoja("portfolio");
   for (const fila of filasPortfolio) {
     const freelancer_id = mapaUsuarios.get(fila.freelancer_email);
     if (!freelancer_id) {
@@ -163,7 +194,7 @@ const seed = async () => {
   console.log(`Portfolio insertado: ${filasPortfolio.length}`);
 
   // 5. Posts
-  const filasPosts = leerCSV("posts.csv");
+  const filasPosts = leerHoja("posts");
   for (const fila of filasPosts) {
     const autor_id = mapaUsuarios.get(fila.autor_email);
     if (!autor_id) {
@@ -179,7 +210,7 @@ const seed = async () => {
   console.log(`Posts insertados: ${filasPosts.length}`);
 
   // 6. Transacciones
-  const filasTransacciones = leerCSV("transacciones.csv");
+  const filasTransacciones = leerHoja("transacciones");
   for (const fila of filasTransacciones) {
     const cliente_id = mapaUsuarios.get(fila.cliente_email);
     const freelancer_id = mapaUsuarios.get(fila.freelancer_email);
@@ -208,7 +239,7 @@ const seed = async () => {
   console.log(`Transacciones insertadas: ${filasTransacciones.length}`);
 
   // 7. Reviews
-  const filasReviews = leerCSV("reviews.csv");
+  const filasReviews = leerHoja("reviews");
   for (const fila of filasReviews) {
     const autor_id = mapaUsuarios.get(fila.autor_email);
     const freelancer_id = mapaUsuarios.get(fila.freelancer_email);
