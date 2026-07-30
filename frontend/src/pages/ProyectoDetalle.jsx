@@ -1,9 +1,10 @@
 import { useParams, Link } from "react-router-dom";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
+import { useQuery } from "@tanstack/react-query";
+import styled from "styled-components";
 import proyectoService from "../services/proyectoService";
 import reviewService from "../services/reviewService";
 import { useAuth } from "../context/AuthContext";
+import useMutacion from "../hooks/useMutacion";
 import PropuestaForm from "../components/Freelancer/PropuestaForm";
 import ReviewForm from "../components/Cliente/ReviewForm";
 import Loading from "../components/common/Loading";
@@ -17,22 +18,58 @@ import {
   Flex,
   SectionTitle,
   EmptyState,
+  Stack,
 } from "../styles/ui";
+import { ESTADOS_PROYECTO, TONO_ESTADO } from "../constants/proyecto";
 import { formatearFecha } from "../utils/parse";
 
-const tonoEstado = {
-  Abierto: "primary",
-  "En progreso": "warning",
-  Completado: "success",
-  Cancelado: "danger",
-};
 
-const estados = ["Abierto", "En progreso", "Completado", "Cancelado"];
+
+const Pagina = styled(PageContainer)`
+  max-width: 760px;
+`;
+
+const Titulo = styled.h1`
+  margin: 0;
+`;
+
+const Descripcion = styled.p`
+  margin-top: ${({ theme }) => theme.spacing(1.25)};
+`;
+
+const Meta = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing(3)};
+  margin-top: ${({ theme }) => theme.spacing(1.75)};
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: 0.9rem;
+`;
+
+const Tecnologias = styled(Flex)`
+  margin-top: ${({ theme }) => theme.spacing(1.25)};
+`;
+
+const Asignado = styled.p`
+  margin-top: ${({ theme }) => theme.spacing(1.75)};
+`;
+
+const SelectorEstado = styled(Select)`
+  max-width: 220px;
+  margin-top: ${({ theme }) => theme.spacing(2.25)};
+`;
+
+const Bloque = styled(Card)`
+  margin-top: ${({ theme }) => theme.spacing(2.5)};
+`;
+
+const Mensaje = styled.p`
+  margin-top: ${({ theme }) => theme.spacing(1)};
+`;
 
 const ProyectoDetalle = () => {
   const { id } = useParams();
   const { usuario } = useAuth();
-  const queryClient = useQueryClient();
 
   const { data: proyecto, isLoading } = useQuery({
     queryKey: ["proyecto", id],
@@ -47,24 +84,16 @@ const ProyectoDetalle = () => {
     enabled: Boolean(freelancerAsignadoId),
   });
 
-  const estadoMutation = useMutation({
+  const estadoMutation = useMutacion({
     mutationFn: (estado) => proyectoService.cambiarEstado(id, estado),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["proyecto", id] });
-      queryClient.invalidateQueries({ queryKey: ["proyectos"] });
-      toast.success("Estado actualizado");
-    },
-    onError: (error) => toast.error(error.message),
+    exito: "Estado actualizado",
+    invalidar: [["proyecto", id], ["proyectos"]],
   });
 
-  const asignarMutation = useMutation({
+  const asignarMutation = useMutacion({
     mutationFn: (freelancerId) => proyectoService.asignarFreelancer(id, freelancerId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["proyecto", id] });
-      queryClient.invalidateQueries({ queryKey: ["proyectos"] });
-      toast.success("Freelancer asignado");
-    },
-    onError: (error) => toast.error(error.message),
+    exito: "Freelancer asignado",
+    invalidar: [["proyecto", id], ["proyectos"]],
   });
 
   if (isLoading) return <Loading />;
@@ -80,16 +109,16 @@ const ProyectoDetalle = () => {
   );
 
   return (
-    <PageContainer style={{ maxWidth: "760px" }}>
+    <Pagina>
       <Card>
         <Flex $justify="space-between" $wrap>
-          <h1 style={{ margin: 0 }}>{proyecto.titulo}</h1>
-          <Badge $tone={tonoEstado[proyecto.estado]}>{proyecto.estado}</Badge>
+          <Titulo>{proyecto.titulo}</Titulo>
+          <Badge $tone={TONO_ESTADO[proyecto.estado]}>{proyecto.estado}</Badge>
         </Flex>
 
-        <p style={{ marginTop: "10px" }}>{proyecto.descripcion}</p>
+        <Descripcion>{proyecto.descripcion}</Descripcion>
 
-        <Flex $wrap $gap={3} style={{ marginTop: "14px", color: "#94a3b8", fontSize: "0.9rem" }}>
+        <Meta>
           <span>Presupuesto: <strong>{proyecto.presupuesto}€</strong></span>
           <span>Entrega: {formatearFecha(proyecto.deadline)}</span>
           <span>
@@ -98,79 +127,81 @@ const ProyectoDetalle = () => {
               {proyecto.cliente_id?.nombre} {proyecto.cliente_id?.apellido}
             </Link>
           </span>
-        </Flex>
+        </Meta>
 
-        <Flex $wrap $gap={0.5} style={{ marginTop: "10px" }}>
+        <Tecnologias $wrap $gap={0.5}>
           {(proyecto.tecnologiasRequeridas || []).map((t) => (
             <Badge key={t}>{t}</Badge>
           ))}
-        </Flex>
+        </Tecnologias>
 
         {proyecto.freelancer_asignado_id && (
-          <p style={{ marginTop: "14px" }}>
+          <Asignado>
             Freelancer asignado:{" "}
             <Link to={`/perfil/${proyecto.freelancer_asignado_id._id}`}>
               {proyecto.freelancer_asignado_id.nombre} {proyecto.freelancer_asignado_id.apellido}
             </Link>
-          </p>
+          </Asignado>
         )}
 
         {esClienteDueño && (
-          <Flex $gap={1} style={{ marginTop: "18px" }}>
-            <Select
-              defaultValue={proyecto.estado}
-              onChange={(e) => estadoMutation.mutate(e.target.value)}
-              style={{ maxWidth: "220px" }}
-            >
-              {estados.map((e) => (
-                <option key={e} value={e}>
-                  {e}
-                </option>
-              ))}
-            </Select>
-          </Flex>
+          <SelectorEstado
+            aria-label="Estado del proyecto"
+            defaultValue={proyecto.estado}
+            onChange={(e) => estadoMutation.mutate(e.target.value)}
+          >
+            {ESTADOS_PROYECTO.map((e) => (
+              <option key={e} value={e}>
+                {e}
+              </option>
+            ))}
+          </SelectorEstado>
         )}
       </Card>
 
       {esClienteDueño && (
-        <Card style={{ marginTop: "20px" }}>
+        <Bloque>
           <SectionTitle>Propuestas recibidas</SectionTitle>
           {proyecto.propuestas?.length ? (
-            proyecto.propuestas.map((p) => (
-              <Card key={p._id} style={{ marginBottom: "12px" }}>
-                <Flex $justify="space-between" $wrap>
-                  <div>
-                    <Link to={`/perfil/${p.freelancer_id?._id}`}>
-                      <strong>
-                        {p.freelancer_id?.nombre} {p.freelancer_id?.apellido}
-                      </strong>
-                    </Link>
-                    <RatingStars
-                      promedio={p.freelancer_id?.rating?.promedio}
-                      cantidad={p.freelancer_id?.rating?.cantidad}
-                    />
-                  </div>
-                  <strong>{p.precio}€</strong>
-                </Flex>
-                <p style={{ marginTop: "8px" }}>{p.mensaje}</p>
-                {proyecto.estado === "Abierto" && (
-                  <Button
-                    type="button"
-                    onClick={() => asignarMutation.mutate(p.freelancer_id?._id || p.freelancer_id)}
-                  >
-                    Asignar a este freelancer
-                  </Button>
-                )}
-              </Card>
-            ))
+            <Stack>
+              {proyecto.propuestas.map((p) => (
+                <Card key={p._id}>
+                  <Flex $justify="space-between" $wrap>
+                    <div>
+                      <Link to={`/perfil/${p.freelancer_id?._id}`}>
+                        <strong>
+                          {p.freelancer_id?.nombre} {p.freelancer_id?.apellido}
+                        </strong>
+                      </Link>
+                      <RatingStars
+                        promedio={p.freelancer_id?.rating?.promedio}
+                        cantidad={p.freelancer_id?.rating?.cantidad}
+                      />
+                    </div>
+                    <strong>{p.precio}€</strong>
+                  </Flex>
+                  <Mensaje>{p.mensaje}</Mensaje>
+                  {proyecto.estado === "Abierto" && (
+                    <Button
+                      type="button"
+                      onClick={() =>
+                        asignarMutation.mutate(p.freelancer_id?._id || p.freelancer_id)
+                      }
+                    >
+                      Asignar a este freelancer
+                    </Button>
+                  )}
+                </Card>
+              ))}
+            </Stack>
           ) : (
             <EmptyState>Todavía no has recibido propuestas.</EmptyState>
           )}
-        </Card>
+        </Bloque>
       )}
 
       {esFreelancer && !esClienteDueño && (
-        <Card style={{ marginTop: "20px" }}>
+        <Bloque>
           <SectionTitle>Tu propuesta</SectionTitle>
           {miPropuesta ? (
             <p>
@@ -181,20 +212,23 @@ const ProyectoDetalle = () => {
           ) : (
             <EmptyState>Este proyecto ya no admite nuevas propuestas.</EmptyState>
           )}
-        </Card>
+        </Bloque>
       )}
 
       {esClienteDueño && proyecto.estado === "Completado" && proyecto.freelancer_asignado_id && (
-        <Card style={{ marginTop: "20px" }}>
+        <Bloque>
           <SectionTitle>Dejar review</SectionTitle>
           {yaTengoReview ? (
             <EmptyState>Ya has dejado una review para este proyecto.</EmptyState>
           ) : (
-            <ReviewForm proyectoId={proyecto._id} freelancerId={proyecto.freelancer_asignado_id._id} />
+            <ReviewForm
+              proyectoId={proyecto._id}
+              freelancerId={proyecto.freelancer_asignado_id._id}
+            />
           )}
-        </Card>
+        </Bloque>
       )}
-    </PageContainer>
+    </Pagina>
   );
 };
 

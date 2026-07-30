@@ -1,47 +1,83 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import styled from "styled-components";
 import { FiHeart, FiMessageCircle, FiTrash2 } from "react-icons/fi";
 import postService from "../../services/postService";
 import { useAuth } from "../../context/AuthContext";
+import useMutacion from "../../hooks/useMutacion";
 import Avatar from "../common/Avatar";
-import { Card, Flex, Input, Button } from "../../styles/ui";
+import { Card, Flex, Input, Button, MutedText, Thumb } from "../../styles/ui";
 import { formatearFecha } from "../../utils/parse";
+
+const Contenido = styled.p`
+  margin-top: ${({ theme }) => theme.spacing(1.5)};
+  white-space: pre-wrap;
+`;
+
+const Imagen = styled(Thumb)`
+  height: auto;
+  margin-top: ${({ theme }) => theme.spacing(1)};
+`;
+
+const BotonIcono = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-weight: 600;
+  color: ${({ theme, $activo }) => ($activo ? theme.colors.danger : theme.colors.textMuted)};
+`;
+
+const Acciones = styled(Flex)`
+  margin-top: ${({ theme }) => theme.spacing(1.5)};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const Comentarios = styled.div`
+  margin-top: ${({ theme }) => theme.spacing(1.25)};
+  padding-top: ${({ theme }) => theme.spacing(1.25)};
+  border-top: 1px solid ${({ theme }) => theme.colors.border};
+`;
+
+const Comentario = styled.p`
+  font-size: 0.9rem;
+  margin: 4px 0;
+`;
+
+const NuevoComentario = styled(Flex)`
+  margin-top: ${({ theme }) => theme.spacing(1.25)};
+`;
 
 const PostCard = ({ post }) => {
   const { usuario } = useAuth();
-  const queryClient = useQueryClient();
   const [comentario, setComentario] = useState("");
 
-  const invalidar = () => queryClient.invalidateQueries({ queryKey: ["posts"] });
-
-  const likeMutation = useMutation({
+  const likeMutation = useMutacion({
     mutationFn: () => postService.toggleLike(post._id),
-    onSuccess: invalidar,
-    onError: (error) => toast.error(error.message),
+    invalidar: [["posts"]],
   });
 
-  const comentarMutation = useMutation({
+  const comentarMutation = useMutacion({
     mutationFn: (contenido) => postService.agregarComentario(post._id, contenido),
-    onSuccess: () => {
-      setComentario("");
-      invalidar();
-    },
-    onError: (error) => toast.error(error.message),
+    invalidar: [["posts"]],
+    onSuccess: () => setComentario(""),
   });
 
-  const eliminarMutation = useMutation({
+  const eliminarMutation = useMutacion({
     mutationFn: () => postService.remove(post._id),
-    onSuccess: invalidar,
-    onError: (error) => toast.error(error.message),
+    exito: "Post eliminado",
+    invalidar: [["posts"]],
   });
 
   const meGusta = usuario && post.likes?.includes(usuario.id);
   const puedeBorrar = usuario && (usuario.id === post.autor_id?._id || usuario.role === "Admin");
 
   return (
-    <Card style={{ marginBottom: "16px" }}>
+    <Card>
       <Flex $justify="space-between">
         <Flex $gap={1.5}>
           <Avatar nombre={post.autor_id?.nombre} fotoPerfil={post.autor_id?.fotoPerfil} />
@@ -51,69 +87,54 @@ const PostCard = ({ post }) => {
                 {post.autor_id?.nombre} {post.autor_id?.apellido}
               </strong>
             </Link>
-            <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8" }}>
-              {formatearFecha(post.createdAt)}
-            </p>
+            <MutedText $size="0.8rem">{formatearFecha(post.createdAt)}</MutedText>
           </div>
         </Flex>
         {puedeBorrar && (
-          <button
+          <BotonIcono
             type="button"
             onClick={() => eliminarMutation.mutate()}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8" }}
             aria-label="Eliminar post"
           >
             <FiTrash2 />
-          </button>
+          </BotonIcono>
         )}
       </Flex>
 
-      <p style={{ marginTop: "12px", whiteSpace: "pre-wrap" }}>{post.contenido}</p>
-      {post.imagen && (
-        <img
-          src={post.imagen}
-          alt=""
-          style={{ width: "100%", borderRadius: "8px", marginTop: "8px" }}
-        />
-      )}
+      <Contenido>{post.contenido}</Contenido>
+      {post.imagen && <Imagen src={post.imagen} alt="" />}
 
-      <Flex $gap={2} style={{ marginTop: "12px", color: "#94a3b8" }}>
-        <button
+      <Acciones $gap={2}>
+        <BotonIcono
           type="button"
-          onClick={() => (usuario ? likeMutation.mutate() : toast.info("Inicia sesión para dar like"))}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
-            color: meGusta ? "#fb7185" : "#94a3b8",
-            fontWeight: 600,
-          }}
+          $activo={meGusta}
+          aria-pressed={Boolean(meGusta)}
+          onClick={() =>
+            usuario ? likeMutation.mutate() : toast.info("Inicia sesión para dar like")
+          }
         >
           <FiHeart fill={meGusta ? "currentColor" : "none"} /> {post.likes?.length || 0}
-        </button>
-        <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+        </BotonIcono>
+        <Flex $gap={0.75}>
           <FiMessageCircle /> {post.comentarios?.length || 0}
-        </span>
-      </Flex>
+        </Flex>
+      </Acciones>
 
       {post.comentarios?.length > 0 && (
-        <div style={{ marginTop: "10px", borderTop: "1px solid rgba(148,163,184,0.18)", paddingTop: "10px" }}>
+        <Comentarios>
           {post.comentarios.map((c) => (
-            <p key={c._id} style={{ fontSize: "0.9rem", margin: "4px 0" }}>
+            <Comentario key={c._id}>
               <strong>
                 {c.usuario_id?.nombre} {c.usuario_id?.apellido}:
               </strong>{" "}
               {c.contenido}
-            </p>
+            </Comentario>
           ))}
-        </div>
+        </Comentarios>
       )}
 
       {usuario && (
-        <Flex $gap={1} style={{ marginTop: "10px" }}>
+        <NuevoComentario $gap={1}>
           <Input
             placeholder="Escribe un comentario..."
             value={comentario}
@@ -130,7 +151,7 @@ const PostCard = ({ post }) => {
           >
             Comentar
           </Button>
-        </Flex>
+        </NuevoComentario>
       )}
     </Card>
   );

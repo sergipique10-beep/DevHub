@@ -1,15 +1,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import proyectoService from "../../services/proyectoService";
+import useMutacion from "../../hooks/useMutacion";
 import { proyectoSchema } from "../../schemas";
 import { listaDesde } from "../../utils/parse";
 import { Form, FormGroup, Label, Input, TextArea, ErrorText, Button } from "../../styles/ui";
 
 const CrearProyectoForm = () => {
-  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   const {
@@ -18,14 +16,11 @@ const CrearProyectoForm = () => {
     formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(proyectoSchema) });
 
-  const mutation = useMutation({
+  const mutation = useMutacion({
     mutationFn: (payload) => proyectoService.create(payload),
-    onSuccess: (proyecto) => {
-      queryClient.invalidateQueries({ queryKey: ["proyectos"] });
-      toast.success("Proyecto publicado");
-      navigate(`/proyectos/${proyecto._id}`);
-    },
-    onError: (error) => toast.error(error.message),
+    exito: "Proyecto publicado",
+    invalidar: [["proyectos"]],
+    onSuccess: (proyecto) => navigate(`/proyectos/${proyecto._id}`),
   });
 
   const onSubmit = (datos) => {

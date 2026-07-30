@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import authService from "../services/authService";
 
 const AuthContext = createContext(null);
@@ -25,31 +25,36 @@ export const AuthProvider = ({ children }) => {
       .finally(() => setCargando(false));
   }, []);
 
-  const login = async (credenciales) => {
+  const login = useCallback(async (credenciales) => {
     const data = await authService.login(credenciales);
     localStorage.setItem(TOKEN_KEY, data.token);
     setUsuario(data.usuario);
     return data.usuario;
-  };
+  }, []);
 
-  const register = async (datos) => {
+  const register = useCallback(async (datos) => {
     const data = await authService.register(datos);
     localStorage.setItem(TOKEN_KEY, data.token);
     setUsuario(data.usuario);
     return data.usuario;
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     setUsuario(null);
     authService.logout().catch(() => {});
-  };
+  }, []);
 
-  return (
-    <AuthContext.Provider value={{ usuario, cargando, login, register, logout }}>
-      {children}
-    </AuthContext.Provider>
+  // Sin este useMemo el value seria un objeto nuevo en cada render del provider,
+  // lo que re-renderiza a los ~34 componentes que consumen useAuth aunque ni el
+  // usuario ni las acciones hayan cambiado. Las acciones van con useCallback
+  // para que la identidad del value dependa solo del estado real.
+  const value = useMemo(
+    () => ({ usuario, cargando, login, register, logout }),
+    [usuario, cargando, login, register, logout]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {

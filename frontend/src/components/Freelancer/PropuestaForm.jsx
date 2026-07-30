@@ -1,27 +1,21 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import proyectoService from "../../services/proyectoService";
+import useMutacion from "../../hooks/useMutacion";
 import { propuestaSchema } from "../../schemas";
 import { Form, FormGroup, Label, Input, TextArea, ErrorText, Button } from "../../styles/ui";
 
 const PropuestaForm = ({ proyectoId }) => {
-  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(propuestaSchema) });
 
-  const mutation = useMutation({
+  const mutation = useMutacion({
     mutationFn: (payload) => proyectoService.enviarPropuesta(proyectoId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["proyecto", proyectoId] });
-      queryClient.invalidateQueries({ queryKey: ["proyectos"] });
-      toast.success("Propuesta enviada");
-    },
-    onError: (error) => toast.error(error.message),
+    exito: "Propuesta enviada",
+    invalidar: [["proyecto", proyectoId], ["proyectos"]],
   });
 
   return (

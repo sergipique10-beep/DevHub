@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "styled-components";
+import styled, { ThemeProvider } from "styled-components";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -42,12 +42,22 @@ const queryClient = new QueryClient({
   },
 });
 
+const Shell = styled.div`
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+`;
+
+const Main = styled.main`
+  flex: 1;
+`;
+
 const Layout = ({ children }) => (
-  <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+  <Shell>
     <Navbar />
-    <div style={{ flex: 1 }}>{children}</div>
+    <Main>{children}</Main>
     <Footer />
-  </div>
+  </Shell>
 );
 
 const RootRedirect = () => {

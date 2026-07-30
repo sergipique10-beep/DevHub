@@ -1,8 +1,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import servicioService from "../../services/servicioService";
+import useMutacion from "../../hooks/useMutacion";
 import { servicioSchema } from "../../schemas";
 import { listaDesde, listaHacia } from "../../utils/parse";
 import { Form, FormGroup, Label, Input, TextArea, Select, ErrorText, Button, Flex } from "../../styles/ui";
@@ -21,7 +20,6 @@ const categorias = [
 ];
 
 const ServicioForm = ({ servicio, onSuccess, onCancel }) => {
-  const queryClient = useQueryClient();
   const editando = Boolean(servicio);
 
   const {
@@ -43,15 +41,12 @@ const ServicioForm = ({ servicio, onSuccess, onCancel }) => {
       : { categoria: categorias[0] },
   });
 
-  const mutation = useMutation({
+  const mutation = useMutacion({
     mutationFn: (payload) =>
       editando ? servicioService.update(servicio._id, payload) : servicioService.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["servicios"] });
-      toast.success(editando ? "Servicio actualizado" : "Servicio creado");
-      onSuccess?.();
-    },
-    onError: (error) => toast.error(error.message),
+    exito: editando ? "Servicio actualizado" : "Servicio creado",
+    invalidar: [["servicios"]],
+    onSuccess: () => onSuccess?.(),
   });
 
   const onSubmit = (datos) => {
@@ -84,13 +79,13 @@ const ServicioForm = ({ servicio, onSuccess, onCancel }) => {
       </FormGroup>
 
       <Flex $gap={2}>
-        <FormGroup style={{ flex: 1 }}>
+        <FormGroup $flex="1">
           <Label htmlFor="precioBase">Precio base (€)</Label>
           <Input id="precioBase" type="number" step="0.01" {...register("precioBase")} />
           {errors.precioBase && <ErrorText>{errors.precioBase.message}</ErrorText>}
         </FormGroup>
 
-        <FormGroup style={{ flex: 1 }}>
+        <FormGroup $flex="1">
           <Label htmlFor="tiempoEntrega">Entrega (días)</Label>
           <Input id="tiempoEntrega" type="number" {...register("tiempoEntrega")} />
           {errors.tiempoEntrega && <ErrorText>{errors.tiempoEntrega.message}</ErrorText>}

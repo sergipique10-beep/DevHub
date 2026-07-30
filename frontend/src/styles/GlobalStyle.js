@@ -1,6 +1,11 @@
 import { createGlobalStyle } from "styled-components";
+import { alpha, variablesCSS } from "./theme";
 
 export const GlobalStyle = createGlobalStyle`
+  :root {
+    ${variablesCSS()}
+  }
+
   *, *::before, *::after {
     box-sizing: border-box;
   }
@@ -18,9 +23,9 @@ export const GlobalStyle = createGlobalStyle`
     font-family: ${({ theme }) => theme.font.body};
     background: ${({ theme }) => theme.colors.background};
     background-image:
-      radial-gradient(circle at 12% 0%, rgba(56, 189, 248, 0.16) 0%, transparent 42%),
-      radial-gradient(circle at 88% 18%, rgba(168, 85, 247, 0.14) 0%, transparent 45%),
-      radial-gradient(circle at 50% 100%, rgba(34, 211, 238, 0.08) 0%, transparent 55%);
+      radial-gradient(circle at 12% 0%, ${alpha("primary", 0.16)} 0%, transparent 42%),
+      radial-gradient(circle at 88% 18%, ${alpha("violet", 0.14)} 0%, transparent 45%),
+      radial-gradient(circle at 50% 100%, ${alpha("cyan", 0.08)} 0%, transparent 55%);
     background-attachment: fixed;
     color: ${({ theme }) => theme.colors.text};
   }
@@ -64,7 +69,7 @@ export const GlobalStyle = createGlobalStyle`
   }
   ::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, ${({ theme }) => theme.colors.accentCyan}, ${({ theme }) => theme.colors.accentViolet});
-    border-radius: 999px;
+    border-radius: ${({ theme }) => theme.radius.pill};
   }
 
   .Toastify__toast {

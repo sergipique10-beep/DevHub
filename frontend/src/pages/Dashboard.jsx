@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
@@ -7,7 +8,7 @@ import servicioService from "../services/servicioService";
 import proyectoService from "../services/proyectoService";
 import Loading from "../components/common/Loading";
 import RatingStars from "../components/common/RatingStars";
-import { PageContainer, PageTitle, Card, Grid, Button, Flex } from "../styles/ui";
+import { PageContainer, PageTitle, Card, Grid, Button, Flex, MutedText } from "../styles/ui";
 
 const StatValue = styled.p`
   font-size: 1.8rem;
@@ -16,15 +17,13 @@ const StatValue = styled.p`
   color: ${({ theme }) => theme.colors.primary};
 `;
 
-const StatLabel = styled.p`
-  color: ${({ theme }) => theme.colors.textMuted};
-  font-size: 0.85rem;
-  margin: 0;
+const Acciones = styled(Flex)`
+  margin-top: ${({ theme }) => theme.spacing(2.5)};
 `;
 
 const StatCard = ({ label, value }) => (
   <Card>
-    <StatLabel>{label}</StatLabel>
+    <MutedText>{label}</MutedText>
     <StatValue>{value}</StatValue>
   </Card>
 );
@@ -43,14 +42,21 @@ const DashboardFreelancer = ({ usuarioId }) => {
     queryFn: () => proyectoService.getAll(),
   });
 
-  if (cargandoPerfil || cargandoServicios || cargandoProyectos) return <Loading />;
+  // Dos recorridos sobre la lista completa de proyectos: se memorizan para no
+  // repetirlos en cada render (p. ej. al refrescar cualquier otra query).
+  const { asignados, propuestasEnviadas } = useMemo(() => {
+    const todos = proyectos || [];
+    return {
+      asignados: todos.filter(
+        (p) => (p.freelancer_asignado_id?._id || p.freelancer_asignado_id) === usuarioId
+      ),
+      propuestasEnviadas: todos.filter((p) =>
+        p.propuestas?.some((prop) => (prop.freelancer_id?._id || prop.freelancer_id) === usuarioId)
+      ),
+    };
+  }, [proyectos, usuarioId]);
 
-  const asignados = (proyectos || []).filter(
-    (p) => (p.freelancer_asignado_id?._id || p.freelancer_asignado_id) === usuarioId
-  );
-  const propuestasEnviadas = (proyectos || []).filter((p) =>
-    p.propuestas?.some((prop) => (prop.freelancer_id?._id || prop.freelancer_id) === usuarioId)
-  );
+  if (cargandoPerfil || cargandoServicios || cargandoProyectos) return <Loading />;
 
   return (
     <>
@@ -62,16 +68,16 @@ const DashboardFreelancer = ({ usuarioId }) => {
           value={asignados.length}
         />
         <Card>
-          <StatLabel>Rating</StatLabel>
+          <MutedText>Rating</MutedText>
           <RatingStars promedio={perfil?.rating?.promedio} cantidad={perfil?.rating?.cantidad} />
         </Card>
       </Grid>
 
-      <Flex $gap={1.5} $wrap style={{ marginTop: "20px" }}>
+      <Acciones $gap={1.5} $wrap>
         <Button as={Link} to="/crear-servicio">Publicar servicio</Button>
         <Button as={Link} to="/mi-portfolio" $variant="secondary">Editar portfolio</Button>
         <Button as={Link} to="/propuestas" $variant="secondary">Ver mis propuestas</Button>
-      </Flex>
+      </Acciones>
     </>
   );
 };
@@ -82,27 +88,31 @@ const DashboardCliente = ({ usuarioId }) => {
     queryFn: () => proyectoService.getAll({ cliente_id: usuarioId }),
   });
 
-  if (isLoading) return <Loading />;
+  // Un solo recorrido para las cuatro cifras, en lugar de cuatro filtros sueltos.
+  const stats = useMemo(() => {
+    const inicial = { Abierto: 0, "En progreso": 0, Completado: 0, propuestas: 0 };
+    return (proyectos || []).reduce((acc, p) => {
+      if (p.estado in acc) acc[p.estado] += 1;
+      acc.propuestas += p.propuestas?.length || 0;
+      return acc;
+    }, inicial);
+  }, [proyectos]);
 
-  const porEstado = (estado) => (proyectos || []).filter((p) => p.estado === estado).length;
-  const propuestasRecibidas = (proyectos || []).reduce(
-    (total, p) => total + (p.propuestas?.length || 0),
-    0
-  );
+  if (isLoading) return <Loading />;
 
   return (
     <>
       <Grid>
-        <StatCard label="Proyectos abiertos" value={porEstado("Abierto")} />
-        <StatCard label="En progreso" value={porEstado("En progreso")} />
-        <StatCard label="Completados" value={porEstado("Completado")} />
-        <StatCard label="Propuestas recibidas" value={propuestasRecibidas} />
+        <StatCard label="Proyectos abiertos" value={stats.Abierto} />
+        <StatCard label="En progreso" value={stats["En progreso"]} />
+        <StatCard label="Completados" value={stats.Completado} />
+        <StatCard label="Propuestas recibidas" value={stats.propuestas} />
       </Grid>
 
-      <Flex $gap={1.5} $wrap style={{ marginTop: "20px" }}>
+      <Acciones $gap={1.5} $wrap>
         <Button as={Link} to="/crear-proyecto">Publicar proyecto</Button>
         <Button as={Link} to="/explorar" $variant="secondary">Buscar freelancers</Button>
-      </Flex>
+      </Acciones>
     </>
   );
 };
@@ -117,11 +127,12 @@ const DashboardAdmin = () => {
     queryFn: () => proyectoService.getAll(),
   });
 
-  if (cargandoUsuarios || cargandoProyectos) return <Loading />;
+  const noVerificados = useMemo(
+    () => (usuarios || []).filter((u) => u.role === "Freelancer" && !u.verificado).length,
+    [usuarios]
+  );
 
-  const noVerificados = (usuarios || []).filter(
-    (u) => u.role === "Freelancer" && !u.verificado
-  ).length;
+  if (cargandoUsuarios || cargandoProyectos) return <Loading />;
 
   return (
     <>
@@ -130,9 +141,9 @@ const DashboardAdmin = () => {
         <StatCard label="Freelancers sin verificar" value={noVerificados} />
         <StatCard label="Proyectos totales" value={proyectos?.length || 0} />
       </Grid>
-      <Flex style={{ marginTop: "20px" }}>
+      <Acciones>
         <Button as={Link} to="/admin">Ir al panel de administración</Button>
-      </Flex>
+      </Acciones>
     </>
   );
 };

@@ -1,8 +1,8 @@
 import styled, { css } from "styled-components";
-import { media } from "./theme";
+import { alpha, media } from "./theme";
 
 export const PageContainer = styled.div`
-  max-width: 1100px;
+  max-width: ${({ $max }) => $max || "1100px"};
   margin: 0 auto;
   padding: ${({ theme }) => theme.spacing(3)};
   ${media.mobile} {
@@ -41,18 +41,18 @@ export const Grid = styled.div`
 
 const gradientButton = css`
   background: ${({ theme }) => theme.gradient.primary};
-  color: #051019;
+  color: ${({ theme }) => theme.colors.onPrimary};
   border: none;
-  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.25);
+  box-shadow: 0 4px 20px ${alpha("primary", 0.25)};
 
   &:hover:not(:disabled) {
-    box-shadow: 0 6px 28px rgba(168, 85, 247, 0.4);
+    box-shadow: 0 6px 28px ${alpha("violet", 0.4)};
     transform: translateY(-1px);
   }
 `;
 
 const secondaryButton = css`
-  background: rgba(148, 163, 184, 0.08);
+  background: ${({ theme }) => theme.colors.hover};
   color: ${({ theme }) => theme.colors.text};
   border: 1px solid ${({ theme }) => theme.colors.border};
 
@@ -63,12 +63,12 @@ const secondaryButton = css`
 `;
 
 const dangerButton = css`
-  background: rgba(251, 113, 133, 0.12);
+  background: ${({ theme }) => theme.colors.dangerSoft};
   color: ${({ theme }) => theme.colors.danger};
-  border: 1px solid rgba(251, 113, 133, 0.35);
+  border: 1px solid ${({ theme }) => theme.colors.dangerBorder};
 
   &:hover:not(:disabled) {
-    background: rgba(251, 113, 133, 0.2);
+    background: ${alpha("danger", 0.2)};
   }
 `;
 
@@ -105,6 +105,7 @@ export const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing(0.75)};
+  ${({ $flex }) => $flex && `flex: ${$flex};`}
 `;
 
 export const Label = styled.label`
@@ -118,7 +119,7 @@ const fieldStyles = css`
   padding: 10px 12px;
   font-size: 0.95rem;
   width: 100%;
-  background: rgba(8, 11, 20, 0.55);
+  background: ${({ theme }) => theme.colors.field};
   border: 1px solid ${({ theme }) => theme.colors.border};
   color: ${({ theme }) => theme.colors.text};
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
@@ -131,7 +132,7 @@ const fieldStyles = css`
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.accentCyan};
-    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+    box-shadow: 0 0 0 3px ${alpha("primary", 0.18)};
   }
 `;
 
@@ -162,17 +163,17 @@ export const ErrorText = styled.span`
 export const Badge = styled.span`
   display: inline-block;
   padding: 2px 10px;
-  border-radius: 999px;
+  border-radius: ${({ theme }) => theme.radius.pill};
   font-size: 0.75rem;
   font-weight: 600;
   border: 1px solid transparent;
   background: ${({ theme, $tone }) =>
     $tone === "success"
-      ? "rgba(52, 211, 153, 0.14)"
+      ? theme.colors.secondarySoft
       : $tone === "warning"
-      ? "rgba(251, 191, 36, 0.14)"
+      ? theme.colors.warningSoft
       : $tone === "danger"
-      ? "rgba(251, 113, 133, 0.14)"
+      ? theme.colors.dangerTint
       : theme.colors.primaryLight};
   color: ${({ theme, $tone }) =>
     $tone === "success"
@@ -216,3 +217,42 @@ export const Flex = styled.div`
   gap: ${({ theme, $gap }) => theme.spacing($gap ?? 1)};
   flex-wrap: ${({ $wrap }) => ($wrap ? "wrap" : "nowrap")};
 `;
+
+/**
+ * Apilado vertical con separación uniforme. Sustituye a los `margin-bottom`
+ * sueltos: el espaciado lo decide el contenedor, no cada hijo.
+ */
+export const Stack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme, $gap }) => theme.spacing($gap ?? 1.5)};
+  ${({ $mt, theme }) => $mt && `margin-top: ${theme.spacing($mt)};`}
+`;
+
+/** Título de una tarjeta dentro de una rejilla o lista. */
+export const CardTitle = styled.h3`
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+`;
+
+/** Texto secundario: descripciones, metadatos, fechas. */
+export const MutedText = styled.p`
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ $size }) => $size || "0.85rem"};
+`;
+
+/** Cifra grande de las tarjetas de estadística. */
+export const StatNumber = styled.p`
+  font-size: 1.6rem;
+  font-weight: 800;
+`;
+
+/** Imagen de cabecera de una tarjeta (portfolio, servicios, posts). */
+export const Thumb = styled.img`
+  width: 100%;
+  height: ${({ $height }) => $height || "140px"};
+  object-fit: cover;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  display: block;
+`;
+

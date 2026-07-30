@@ -1,11 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
 import styled from "styled-components";
 import proyectoService from "../../services/proyectoService";
 import Avatar from "../common/Avatar";
 import Loading from "../common/Loading";
-import { Card, Grid, Badge, SectionTitle, EmptyState } from "../../styles/ui";
-import { formatearFecha } from "../../utils/parse";
+import ProyectoCard from "../common/ProyectoCard";
+import { Card, Grid, SectionTitle, EmptyState, MutedText } from "../../styles/ui";
 
 const Header = styled(Card)`
   display: flex;
@@ -18,12 +17,13 @@ const Section = styled.div`
   margin-top: ${({ theme }) => theme.spacing(3)};
 `;
 
-const tonoEstado = {
-  Abierto: "primary",
-  "En progreso": "warning",
-  Completado: "success",
-  Cancelado: "danger",
-};
+const Nombre = styled.h1`
+  margin: 0;
+`;
+
+const Bio = styled.p`
+  max-width: 560px;
+`;
 
 const PerfilCliente = ({ usuario }) => {
   const { data: proyectos, isLoading } = useQuery({
@@ -36,13 +36,11 @@ const PerfilCliente = ({ usuario }) => {
       <Header>
         <Avatar nombre={usuario.nombre} fotoPerfil={usuario.fotoPerfil} size="88px" />
         <div>
-          <h1 style={{ margin: 0 }}>
+          <Nombre>
             {usuario.nombre} {usuario.apellido}
-          </h1>
-          <p style={{ color: "#94a3b8", margin: "4px 0" }}>
-            {usuario.ubicacion || "Ubicación no especificada"}
-          </p>
-          <p style={{ maxWidth: "560px" }}>{usuario.bio}</p>
+          </Nombre>
+          <MutedText>{usuario.ubicacion || "Ubicación no especificada"}</MutedText>
+          <Bio>{usuario.bio}</Bio>
         </div>
       </Header>
 
@@ -53,13 +51,7 @@ const PerfilCliente = ({ usuario }) => {
         ) : proyectos?.length ? (
           <Grid>
             {proyectos.map((p) => (
-              <Card key={p._id} as={Link} to={`/proyectos/${p._id}`} style={{ display: "block" }}>
-                <h3 style={{ margin: "0 0 6px" }}>{p.titulo}</h3>
-                <Badge $tone={tonoEstado[p.estado]}>{p.estado}</Badge>
-                <p style={{ color: "#94a3b8", fontSize: "0.85rem", marginTop: "8px" }}>
-                  Presupuesto: {p.presupuesto}€ · Entrega: {formatearFecha(p.deadline)}
-                </p>
-              </Card>
+              <ProyectoCard key={p._id} proyecto={p} />
             ))}
           </Grid>
         ) : (

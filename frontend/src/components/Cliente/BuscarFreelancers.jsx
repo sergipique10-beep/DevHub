@@ -1,35 +1,85 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
+import styled from "styled-components";
 import usuarioService from "../../services/usuarioService";
+import useDebounce from "../../hooks/useDebounce";
 import Avatar from "../common/Avatar";
 import RatingStars from "../common/RatingStars";
 import Loading from "../common/Loading";
-import { Card, Grid, Form, FormGroup, Label, Input, Select, Button, EmptyState, Flex } from "../../styles/ui";
+import {
+  Card,
+  Grid,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+  Select,
+  Badge,
+  EmptyState,
+  Flex,
+  MutedText,
+} from "../../styles/ui";
 import { listaDesde } from "../../utils/parse";
+
+const Filtros = styled(Card)`
+  margin-bottom: ${({ theme }) => theme.spacing(2.5)};
+`;
+
+const FilaFiltros = styled(Form)`
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+`;
+
+const CampoAncho = styled(FormGroup)`
+  flex: 1;
+  min-width: 200px;
+`;
+
+const CampoEstrecho = styled(FormGroup)`
+  min-width: 160px;
+`;
+
+const Ficha = styled(Card)`
+  display: block;
+`;
+
+const Skills = styled(Flex)`
+  margin-top: ${({ theme }) => theme.spacing(1.25)};
+`;
 
 const BuscarFreelancers = () => {
   const [skillsInput, setSkillsInput] = useState("");
   const [minRating, setMinRating] = useState("");
-  const [filtros, setFiltros] = useState({});
+
+  // Sin debounce cada tecla dispararia una peticion; con el, la busqueda es
+  // en vivo y no hace falta un boton "Buscar".
+  const skillsDebounced = useDebounce(skillsInput);
+
+  const filtros = useMemo(
+    () => ({
+      skills: listaDesde(skillsDebounced, ","),
+      minRating: minRating || undefined,
+    }),
+    [skillsDebounced, minRating]
+  );
 
   const { data: resultados, isLoading } = useQuery({
     queryKey: ["usuarios", "buscar", filtros],
     queryFn: () => usuarioService.buscar(filtros),
   });
 
-  const freelancers = (resultados || []).filter((u) => u.role === "Freelancer");
-
-  const buscar = (e) => {
-    e.preventDefault();
-    setFiltros({ skills: listaDesde(skillsInput, ","), minRating: minRating || undefined });
-  };
+  const freelancers = useMemo(
+    () => (resultados || []).filter((u) => u.role === "Freelancer"),
+    [resultados]
+  );
 
   return (
     <div>
-      <Card style={{ marginBottom: "20px" }}>
-        <Form onSubmit={buscar} style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "flex-end" }}>
-          <FormGroup style={{ flex: 1, minWidth: "200px" }}>
+      <Filtros>
+        <FilaFiltros onSubmit={(e) => e.preventDefault()}>
+          <CampoAncho>
             <Label htmlFor="skills">Skills (separados por coma)</Label>
             <Input
               id="skills"
@@ -37,8 +87,8 @@ const BuscarFreelancers = () => {
               value={skillsInput}
               onChange={(e) => setSkillsInput(e.target.value)}
             />
-          </FormGroup>
-          <FormGroup style={{ minWidth: "160px" }}>
+          </CampoAncho>
+          <CampoEstrecho>
             <Label htmlFor="minRating">Rating mínimo</Label>
             <Select id="minRating" value={minRating} onChange={(e) => setMinRating(e.target.value)}>
               <option value="">Cualquiera</option>
@@ -48,47 +98,32 @@ const BuscarFreelancers = () => {
               <option value="4">4+</option>
               <option value="4.5">4.5+</option>
             </Select>
-          </FormGroup>
-          <Button type="submit">Buscar</Button>
-        </Form>
-      </Card>
+          </CampoEstrecho>
+        </FilaFiltros>
+      </Filtros>
 
       {isLoading ? (
         <Loading />
-      ) : freelancers?.length ? (
+      ) : freelancers.length ? (
         <Grid>
           {freelancers.map((f) => (
-            <Card key={f._id} as={Link} to={`/perfil/${f._id}`} style={{ display: "block" }}>
+            <Ficha key={f._id} as={Link} to={`/perfil/${f._id}`}>
               <Flex $gap={1.5}>
                 <Avatar nombre={f.nombre} fotoPerfil={f.fotoPerfil} />
                 <div>
                   <strong>
                     {f.nombre} {f.apellido}
                   </strong>
-                  <p style={{ margin: "2px 0", color: "#94a3b8", fontSize: "0.85rem" }}>
-                    {f.ubicacion}
-                  </p>
+                  <MutedText>{f.ubicacion}</MutedText>
                   <RatingStars promedio={f.rating?.promedio} cantidad={f.rating?.cantidad} />
                 </div>
               </Flex>
-              <Flex $wrap $gap={0.5} style={{ marginTop: "10px" }}>
+              <Skills $wrap $gap={0.5}>
                 {(f.skills || []).slice(0, 4).map((s) => (
-                  <span
-                    key={s.nombre}
-                    style={{
-                      background: "rgba(56, 189, 248, 0.14)",
-                      color: "#38bdf8",
-                      padding: "2px 8px",
-                      borderRadius: "999px",
-                      fontSize: "0.75rem",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {s.nombre}
-                  </span>
+                  <Badge key={s.nombre}>{s.nombre}</Badge>
                 ))}
-              </Flex>
-            </Card>
+              </Skills>
+            </Ficha>
           ))}
         </Grid>
       ) : (

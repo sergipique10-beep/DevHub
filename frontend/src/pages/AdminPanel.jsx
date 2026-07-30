@@ -1,15 +1,34 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { toast } from "react-toastify";
+import styled from "styled-components";
 import usuarioService from "../services/usuarioService";
 import postService from "../services/postService";
+import useMutacion from "../hooks/useMutacion";
 import Loading from "../components/common/Loading";
 import Avatar from "../components/common/Avatar";
-import { PageContainer, PageTitle, SectionTitle, Card, Badge, Button, Flex, EmptyState } from "../styles/ui";
+import {
+  PageContainer,
+  PageTitle,
+  SectionTitle,
+  Card,
+  Badge,
+  Button,
+  Flex,
+  Stack,
+  EmptyState,
+  MutedText,
+  StatNumber,
+} from "../styles/ui";
+
+const Resumen = styled(Flex)`
+  margin-bottom: ${({ theme }) => theme.spacing(2.5)};
+`;
+
+const SubSeccion = styled(SectionTitle)`
+  margin-top: ${({ theme }) => theme.spacing(3.5)};
+`;
 
 const AdminPanel = () => {
-  const queryClient = useQueryClient();
-
   const { data: usuarios, isLoading: cargandoUsuarios } = useQuery({
     queryKey: ["usuarios"],
     queryFn: () => usuarioService.getAll(),
@@ -20,108 +39,111 @@ const AdminPanel = () => {
     queryFn: () => postService.getAll(),
   });
 
-  const verificarMutation = useMutation({
+  const verificarMutation = useMutacion({
     mutationFn: ({ id, verificado }) => usuarioService.update(id, { verificado }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["usuarios"] });
-      toast.success("Estado de verificación actualizado");
-    },
-    onError: (error) => toast.error(error.message),
+    exito: "Estado de verificación actualizado",
+    invalidar: [["usuarios"]],
   });
 
-  const desactivarMutation = useMutation({
+  const desactivarMutation = useMutacion({
     mutationFn: (id) => usuarioService.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["usuarios"] });
-      toast.success("Usuario desactivado");
-    },
-    onError: (error) => toast.error(error.message),
+    exito: "Usuario desactivado",
+    invalidar: [["usuarios"]],
   });
 
-  const borrarPostMutation = useMutation({
+  const borrarPostMutation = useMutacion({
     mutationFn: (id) => postService.remove(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      toast.success("Post eliminado");
-    },
-    onError: (error) => toast.error(error.message),
+    exito: "Post eliminado",
+    invalidar: [["posts"]],
   });
 
   return (
     <PageContainer>
       <PageTitle>Panel de administración</PageTitle>
 
-      <Flex $gap={2} style={{ marginBottom: "20px" }}>
+      <Resumen $gap={2}>
         <Card>
-          <p style={{ margin: 0, color: "#94a3b8", fontSize: "0.85rem" }}>Usuarios</p>
-          <p style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800 }}>{usuarios?.length || 0}</p>
+          <MutedText>Usuarios</MutedText>
+          <StatNumber>{usuarios?.length || 0}</StatNumber>
         </Card>
         <Card>
-          <p style={{ margin: 0, color: "#94a3b8", fontSize: "0.85rem" }}>Posts</p>
-          <p style={{ margin: 0, fontSize: "1.6rem", fontWeight: 800 }}>{posts?.length || 0}</p>
+          <MutedText>Posts</MutedText>
+          <StatNumber>{posts?.length || 0}</StatNumber>
         </Card>
         <Button as={Link} to="/transacciones" $variant="secondary">
           Ver todas las transacciones
         </Button>
-      </Flex>
+      </Resumen>
 
       <SectionTitle>Usuarios</SectionTitle>
       {cargandoUsuarios ? (
         <Loading />
       ) : (
-        usuarios?.map((u) => (
-          <Card key={u._id} style={{ marginBottom: "10px" }}>
-            <Flex $justify="space-between" $wrap>
-              <Flex $gap={1.5}>
-                <Avatar nombre={u.nombre} fotoPerfil={u.fotoPerfil} />
-                <div>
-                  <strong>
-                    {u.nombre} {u.apellido}
-                  </strong>{" "}
-                  <Badge>{u.role}</Badge>
-                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#94a3b8" }}>{u.email}</p>
-                </div>
-              </Flex>
-              <Flex $gap={1}>
-                {u.role === "Freelancer" && (
+        <Stack $gap={1.25}>
+          {usuarios?.map((u) => (
+            <Card key={u._id}>
+              <Flex $justify="space-between" $wrap>
+                <Flex $gap={1.5}>
+                  <Avatar nombre={u.nombre} fotoPerfil={u.fotoPerfil} />
+                  <div>
+                    <strong>
+                      {u.nombre} {u.apellido}
+                    </strong>{" "}
+                    <Badge>{u.role}</Badge>
+                    <MutedText>{u.email}</MutedText>
+                  </div>
+                </Flex>
+                <Flex $gap={1}>
+                  {u.role === "Freelancer" && (
+                    <Button
+                      type="button"
+                      $variant="secondary"
+                      onClick={() =>
+                        verificarMutation.mutate({ id: u._id, verificado: !u.verificado })
+                      }
+                    >
+                      {u.verificado ? "Desverificar" : "Verificar"}
+                    </Button>
+                  )}
                   <Button
                     type="button"
-                    $variant="secondary"
-                    onClick={() =>
-                      verificarMutation.mutate({ id: u._id, verificado: !u.verificado })
-                    }
+                    $variant="danger"
+                    onClick={() => desactivarMutation.mutate(u._id)}
                   >
-                    {u.verificado ? "Desverificar" : "Verificar"}
+                    Desactivar
                   </Button>
-                )}
-                <Button type="button" $variant="danger" onClick={() => desactivarMutation.mutate(u._id)}>
-                  Desactivar
-                </Button>
+                </Flex>
               </Flex>
-            </Flex>
-          </Card>
-        ))
+            </Card>
+          ))}
+        </Stack>
       )}
 
-      <SectionTitle style={{ marginTop: "28px" }}>Moderar posts</SectionTitle>
+      <SubSeccion>Moderar posts</SubSeccion>
       {cargandoPosts ? (
         <Loading />
       ) : posts?.length ? (
-        posts.map((post) => (
-          <Card key={post._id} style={{ marginBottom: "10px" }}>
-            <Flex $justify="space-between" $wrap>
-              <div>
-                <strong>
-                  {post.autor_id?.nombre} {post.autor_id?.apellido}
-                </strong>
-                <p style={{ margin: "4px 0 0" }}>{post.contenido}</p>
-              </div>
-              <Button type="button" $variant="danger" onClick={() => borrarPostMutation.mutate(post._id)}>
-                Eliminar
-              </Button>
-            </Flex>
-          </Card>
-        ))
+        <Stack $gap={1.25}>
+          {posts.map((post) => (
+            <Card key={post._id}>
+              <Flex $justify="space-between" $wrap>
+                <div>
+                  <strong>
+                    {post.autor_id?.nombre} {post.autor_id?.apellido}
+                  </strong>
+                  <p>{post.contenido}</p>
+                </div>
+                <Button
+                  type="button"
+                  $variant="danger"
+                  onClick={() => borrarPostMutation.mutate(post._id)}
+                >
+                  Eliminar
+                </Button>
+              </Flex>
+            </Card>
+          ))}
+        </Stack>
       ) : (
         <EmptyState>No hay posts publicados.</EmptyState>
       )}

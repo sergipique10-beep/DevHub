@@ -1,15 +1,13 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import reviewService from "../../services/reviewService";
+import useMutacion from "../../hooks/useMutacion";
 import { reviewSchema } from "../../schemas";
 import { Form, FormGroup, Label, Input, TextArea, Select, ErrorText, Button, Flex } from "../../styles/ui";
 
 const estrellasOptions = [1, 2, 3, 4, 5];
 
 const ReviewForm = ({ proyectoId, freelancerId }) => {
-  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -19,7 +17,7 @@ const ReviewForm = ({ proyectoId, freelancerId }) => {
     defaultValues: { puntuacion: 5, comunicacion: 5, calidad: 5, puntualidad: 5 },
   });
 
-  const mutation = useMutation({
+  const mutation = useMutacion({
     mutationFn: (datos) =>
       reviewService.create({
         proyecto_id: proyectoId,
@@ -31,12 +29,8 @@ const ReviewForm = ({ proyectoId, freelancerId }) => {
           puntualidad: datos.puntualidad,
         },
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reviews", freelancerId] });
-      queryClient.invalidateQueries({ queryKey: ["proyecto", proyectoId] });
-      toast.success("Review enviada, gracias por tu feedback");
-    },
-    onError: (error) => toast.error(error.message),
+    exito: "Review enviada, gracias por tu feedback",
+    invalidar: [["reviews", freelancerId], ["proyecto", proyectoId]],
   });
 
   return (
@@ -59,15 +53,15 @@ const ReviewForm = ({ proyectoId, freelancerId }) => {
       </FormGroup>
 
       <Flex $gap={2}>
-        <FormGroup style={{ flex: 1 }}>
+        <FormGroup $flex="1">
           <Label htmlFor="comunicacion">Comunicación</Label>
           <Input id="comunicacion" type="number" min="1" max="5" {...register("comunicacion")} />
         </FormGroup>
-        <FormGroup style={{ flex: 1 }}>
+        <FormGroup $flex="1">
           <Label htmlFor="calidad">Calidad</Label>
           <Input id="calidad" type="number" min="1" max="5" {...register("calidad")} />
         </FormGroup>
-        <FormGroup style={{ flex: 1 }}>
+        <FormGroup $flex="1">
           <Label htmlFor="puntualidad">Puntualidad</Label>
           <Input id="puntualidad" type="number" min="1" max="5" {...register("puntualidad")} />
         </FormGroup>

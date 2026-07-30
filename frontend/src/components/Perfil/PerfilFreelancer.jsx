@@ -7,7 +7,17 @@ import reviewService from "../../services/reviewService";
 import Avatar from "../common/Avatar";
 import RatingStars from "../common/RatingStars";
 import Loading from "../common/Loading";
-import { Card, Grid, Badge, SectionTitle, EmptyState, Flex } from "../../styles/ui";
+import {
+  Card,
+  Grid,
+  Badge,
+  SectionTitle,
+  EmptyState,
+  Flex,
+  Stack,
+  MutedText,
+  Thumb,
+} from "../../styles/ui";
 
 const Header = styled(Card)`
   display: flex;
@@ -26,32 +36,38 @@ const Enlaces = styled.div`
   }
 `;
 
-const SkillTag = styled.span`
-  background: ${({ theme }) => theme.colors.primaryLight};
-  color: ${({ theme }) => theme.colors.primary};
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-`;
-
 const Section = styled.div`
   margin-top: ${({ theme }) => theme.spacing(3)};
 `;
 
-const PortfolioCard = styled(Card)`
-  img {
-    width: 100%;
-    height: 140px;
-    object-fit: cover;
-    border-radius: ${({ theme }) => theme.radius.sm};
-    margin-bottom: ${({ theme }) => theme.spacing(1)};
-    background: ${({ theme }) => theme.colors.background};
-  }
+const Portada = styled(Thumb)`
+  margin-bottom: ${({ theme }) => theme.spacing(1)};
+  background: ${({ theme }) => theme.colors.background};
 `;
 
-const ReviewCard = styled(Card)`
-  margin-bottom: ${({ theme }) => theme.spacing(1.5)};
+const Titulo = styled.h1`
+  margin: 0;
+`;
+
+const TituloTarjeta = styled.h3`
+  margin: 0 0 6px;
+`;
+
+const Bio = styled.p`
+  margin-top: ${({ theme }) => theme.spacing(1.25)};
+  max-width: 560px;
+`;
+
+const Precio = styled.p`
+  font-weight: 700;
+`;
+
+const Tags = styled(Flex)`
+  margin-top: ${({ theme }) => theme.spacing(1)};
+`;
+
+const Comentario = styled.p`
+  margin-top: ${({ theme }) => theme.spacing(1)};
 `;
 
 const PerfilFreelancer = ({ usuario }) => {
@@ -76,28 +92,26 @@ const PerfilFreelancer = ({ usuario }) => {
         <Avatar nombre={usuario.nombre} fotoPerfil={usuario.fotoPerfil} size="88px" />
         <div>
           <Flex $gap={1}>
-            <h1 style={{ margin: 0 }}>
+            <Titulo>
               {usuario.nombre} {usuario.apellido}
-            </h1>
+            </Titulo>
             {usuario.verificado && (
               <Badge $tone="success">
                 <FiCheckCircle /> Verificado
               </Badge>
             )}
           </Flex>
-          <p style={{ color: "#94a3b8", margin: "4px 0" }}>
-            {usuario.ubicacion || "Ubicación no especificada"}
-          </p>
+          <MutedText>{usuario.ubicacion || "Ubicación no especificada"}</MutedText>
           <RatingStars promedio={usuario.rating?.promedio} cantidad={usuario.rating?.cantidad} />
-          <p style={{ marginTop: "10px", maxWidth: "560px" }}>{usuario.bio}</p>
+          <Bio>{usuario.bio}</Bio>
 
-          <Flex $wrap $gap={1} style={{ marginTop: "8px" }}>
+          <Tags $wrap $gap={1}>
             {(usuario.skills || []).map((s) => (
-              <SkillTag key={s.nombre}>
+              <Badge key={s.nombre}>
                 {s.nombre} · {s.nivel}/5
-              </SkillTag>
+              </Badge>
             ))}
-          </Flex>
+          </Tags>
 
           <Enlaces>
             {usuario.enlaces?.github && (
@@ -127,9 +141,9 @@ const PerfilFreelancer = ({ usuario }) => {
           <Grid>
             {servicios.map((s) => (
               <Card key={s._id}>
-                <h3 style={{ margin: "0 0 6px" }}>{s.titulo}</h3>
-                <p style={{ color: "#94a3b8", fontSize: "0.9rem" }}>{s.categoria}</p>
-                <p style={{ fontWeight: 700 }}>{s.precioBase}€</p>
+                <TituloTarjeta>{s.titulo}</TituloTarjeta>
+                <MutedText $size="0.9rem">{s.categoria}</MutedText>
+                <Precio>{s.precioBase}€</Precio>
               </Card>
             ))}
           </Grid>
@@ -145,16 +159,16 @@ const PerfilFreelancer = ({ usuario }) => {
         ) : portfolio?.length ? (
           <Grid>
             {portfolio.map((p) => (
-              <PortfolioCard key={p._id}>
-                {p.imagenes?.[0] && <img src={p.imagenes[0]} alt={p.titulo} />}
-                <h3 style={{ margin: "0 0 6px" }}>{p.titulo}</h3>
-                <p style={{ color: "#94a3b8", fontSize: "0.9rem" }}>{p.descripcion}</p>
-                <Flex $wrap $gap={0.5} style={{ marginTop: "8px" }}>
+              <Card key={p._id}>
+                {p.imagenes?.[0] && <Portada src={p.imagenes[0]} alt={p.titulo} />}
+                <TituloTarjeta>{p.titulo}</TituloTarjeta>
+                <MutedText $size="0.9rem">{p.descripcion}</MutedText>
+                <Tags $wrap $gap={0.5}>
                   {(p.tecnologias || []).map((t) => (
-                    <SkillTag key={t}>{t}</SkillTag>
+                    <Badge key={t}>{t}</Badge>
                   ))}
-                </Flex>
-                <Flex $gap={1} style={{ marginTop: "10px" }}>
+                </Tags>
+                <Tags $gap={1}>
                   {p.enlaceProyecto && (
                     <a href={p.enlaceProyecto} target="_blank" rel="noreferrer">
                       Demo
@@ -165,8 +179,8 @@ const PerfilFreelancer = ({ usuario }) => {
                       Repositorio
                     </a>
                   )}
-                </Flex>
-              </PortfolioCard>
+                </Tags>
+              </Card>
             ))}
           </Grid>
         ) : (
@@ -179,17 +193,19 @@ const PerfilFreelancer = ({ usuario }) => {
         {cargandoReviews ? (
           <Loading />
         ) : reviews?.length ? (
-          reviews.map((r) => (
-            <ReviewCard key={r._id}>
-              <Flex $justify="space-between">
-                <strong>
-                  {r.autor_id?.nombre} {r.autor_id?.apellido}
-                </strong>
-                <RatingStars promedio={r.puntuacion} />
-              </Flex>
-              <p style={{ margin: "8px 0 0" }}>{r.comentario}</p>
-            </ReviewCard>
-          ))
+          <Stack>
+            {reviews.map((r) => (
+              <Card key={r._id}>
+                <Flex $justify="space-between">
+                  <strong>
+                    {r.autor_id?.nombre} {r.autor_id?.apellido}
+                  </strong>
+                  <RatingStars promedio={r.puntuacion} />
+                </Flex>
+                <Comentario>{r.comentario}</Comentario>
+              </Card>
+            ))}
+          </Stack>
         ) : (
           <EmptyState>Sin reviews todavía.</EmptyState>
         )}

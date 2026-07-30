@@ -1,10 +1,37 @@
 import { useQuery } from "@tanstack/react-query";
+import styled from "styled-components";
 import reviewService from "../services/reviewService";
 import { useAuth } from "../context/AuthContext";
 import Loading from "../components/common/Loading";
 import RatingStars from "../components/common/RatingStars";
-import { PageContainer, PageTitle, Card, EmptyState, Flex } from "../styles/ui";
+import {
+  PageContainer,
+  PageTitle,
+  Card,
+  EmptyState,
+  Flex,
+  Stack,
+  MutedText,
+} from "../styles/ui";
 import { formatearFecha } from "../utils/parse";
+
+const Pagina = styled(PageContainer)`
+  max-width: 640px;
+`;
+
+const Comentario = styled.p`
+  margin: ${({ theme }) => theme.spacing(1)} 0;
+`;
+
+const Aspectos = styled(Flex)`
+  font-size: 0.8rem;
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+const Fecha = styled(MutedText)`
+  font-size: 0.8rem;
+  margin-top: 6px;
+`;
 
 const Reviews = () => {
   const { usuario } = useAuth();
@@ -17,7 +44,7 @@ const Reviews = () => {
   });
 
   return (
-    <PageContainer style={{ maxWidth: "640px" }}>
+    <Pagina>
       <PageTitle>Reviews recibidas</PageTitle>
       {!esFreelancer ? (
         <EmptyState>
@@ -26,29 +53,29 @@ const Reviews = () => {
       ) : isLoading ? (
         <Loading />
       ) : reviews?.length ? (
-        reviews.map((r) => (
-          <Card key={r._id} style={{ marginBottom: "14px" }}>
-            <Flex $justify="space-between">
-              <strong>
-                {r.autor_id?.nombre} {r.autor_id?.apellido}
-              </strong>
-              <RatingStars promedio={r.puntuacion} />
-            </Flex>
-            <p style={{ margin: "8px 0" }}>{r.comentario}</p>
-            <Flex $gap={2} style={{ fontSize: "0.8rem", color: "#94a3b8" }}>
-              <span>Comunicación: {r.aspectos.comunicacion}/5</span>
-              <span>Calidad: {r.aspectos.calidad}/5</span>
-              <span>Puntualidad: {r.aspectos.puntualidad}/5</span>
-            </Flex>
-            <p style={{ fontSize: "0.8rem", color: "#94a3b8", marginTop: "6px" }}>
-              {formatearFecha(r.createdAt)}
-            </p>
-          </Card>
-        ))
+        <Stack $gap={1.75}>
+          {reviews.map((r) => (
+            <Card key={r._id}>
+              <Flex $justify="space-between">
+                <strong>
+                  {r.autor_id?.nombre} {r.autor_id?.apellido}
+                </strong>
+                <RatingStars promedio={r.puntuacion} />
+              </Flex>
+              <Comentario>{r.comentario}</Comentario>
+              <Aspectos $gap={2} $wrap>
+                <span>Comunicación: {r.aspectos.comunicacion}/5</span>
+                <span>Calidad: {r.aspectos.calidad}/5</span>
+                <span>Puntualidad: {r.aspectos.puntualidad}/5</span>
+              </Aspectos>
+              <Fecha>{formatearFecha(r.createdAt)}</Fecha>
+            </Card>
+          ))}
+        </Stack>
       ) : (
         <EmptyState>Todavía no has recibido reviews.</EmptyState>
       )}
-    </PageContainer>
+    </Pagina>
   );
 };
 

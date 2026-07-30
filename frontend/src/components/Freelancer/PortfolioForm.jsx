@@ -1,14 +1,12 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import portfolioService from "../../services/portfolioService";
+import useMutacion from "../../hooks/useMutacion";
 import { portfolioSchema } from "../../schemas";
 import { listaDesde, listaHacia } from "../../utils/parse";
 import { Form, FormGroup, Label, Input, TextArea, ErrorText, Button, Flex } from "../../styles/ui";
 
 const PortfolioForm = ({ item, onSuccess, onCancel }) => {
-  const queryClient = useQueryClient();
   const editando = Boolean(item);
 
   const {
@@ -29,15 +27,12 @@ const PortfolioForm = ({ item, onSuccess, onCancel }) => {
       : {},
   });
 
-  const mutation = useMutation({
+  const mutation = useMutacion({
     mutationFn: (payload) =>
       editando ? portfolioService.update(item._id, payload) : portfolioService.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["portfolio"] });
-      toast.success(editando ? "Proyecto actualizado" : "Proyecto añadido al portfolio");
-      onSuccess?.();
-    },
-    onError: (error) => toast.error(error.message),
+    exito: editando ? "Proyecto actualizado" : "Proyecto añadido al portfolio",
+    invalidar: [["portfolio"]],
+    onSuccess: () => onSuccess?.(),
   });
 
   const onSubmit = (datos) => {

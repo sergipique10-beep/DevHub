@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import CrearPost from "./CrearPost";
 import PostCard from "./PostCard";
 import Loading from "../common/Loading";
-import { Card, EmptyState } from "../../styles/ui";
+import { Card, EmptyState, Stack } from "../../styles/ui";
 
 const Feed = () => {
   const { usuario } = useAuth();
@@ -14,9 +14,9 @@ const Feed = () => {
   });
 
   return (
-    <div>
+    <Stack $gap={2}>
       {usuario && (
-        <Card style={{ marginBottom: "20px" }}>
+        <Card>
           <CrearPost />
         </Card>
       )}
@@ -28,7 +28,7 @@ const Feed = () => {
       ) : (
         <EmptyState>Todavía no hay publicaciones en el feed.</EmptyState>
       )}
-    </div>
+    </Stack>
   );
 };
 

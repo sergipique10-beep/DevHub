@@ -10,12 +10,17 @@ const Wrapper = styled.span`
   font-size: 0.9rem;
 `;
 
+const Cantidad = styled.span`
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-weight: 400;
+`;
+
 const RatingStars = ({ promedio = 0, cantidad }) => (
   <Wrapper>
     <FiStar fill="currentColor" />
     {promedio.toFixed(1)}
     {cantidad !== undefined && (
-      <span style={{ color: "#94a3b8", fontWeight: 400 }}>({cantidad})</span>
+      <Cantidad>({cantidad})</Cantidad>
     )}
   </Wrapper>
 );

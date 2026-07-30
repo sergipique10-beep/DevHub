@@ -17,9 +17,13 @@ const Footnote = styled.p`
   font-size: 0.9rem;
 `;
 
+const Titulo = styled(PageTitle)`
+  margin-bottom: 4px;
+`;
+
 const Register = () => (
   <AuthLayout>
-    <PageTitle style={{ marginBottom: "4px" }}>Crea tu cuenta</PageTitle>
+    <Titulo>Crea tu cuenta</Titulo>
     <Subtitle>Muestra tu trabajo, encuentra talento o tu próximo proyecto.</Subtitle>
     <RegisterForm />
     <Footnote>

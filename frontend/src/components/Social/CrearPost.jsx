@@ -1,13 +1,16 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import postService from "../../services/postService";
+import useMutacion from "../../hooks/useMutacion";
 import { postSchema } from "../../schemas";
+import styled from "styled-components";
 import { Form, FormGroup, TextArea, Input, ErrorText, Button } from "../../styles/ui";
 
+const Enviar = styled(Button)`
+  align-self: flex-end;
+`;
+
 const CrearPost = () => {
-  const queryClient = useQueryClient();
   const {
     register,
     handleSubmit,
@@ -15,13 +18,10 @@ const CrearPost = () => {
     formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(postSchema) });
 
-  const mutation = useMutation({
+  const mutation = useMutacion({
     mutationFn: (datos) => postService.create(datos),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      reset();
-    },
-    onError: (error) => toast.error(error.message),
+    invalidar: [["posts"]],
+    onSuccess: () => reset(),
   });
 
   return (
@@ -33,9 +33,9 @@ const CrearPost = () => {
       <FormGroup>
         <Input placeholder="URL de imagen (opcional)" {...register("imagen")} />
       </FormGroup>
-      <Button type="submit" disabled={isSubmitting || mutation.isPending} style={{ alignSelf: "flex-end" }}>
+      <Enviar type="submit" disabled={isSubmitting || mutation.isPending}>
         Publicar
-      </Button>
+      </Enviar>
     </Form>
   );
 };

@@ -17,9 +17,13 @@ const Footnote = styled.p`
   font-size: 0.9rem;
 `;
 
+const Titulo = styled(PageTitle)`
+  margin-bottom: 4px;
+`;
+
 const Login = () => (
   <AuthLayout>
-    <PageTitle style={{ marginBottom: "4px" }}>Inicia sesión</PageTitle>
+    <Titulo>Inicia sesión</Titulo>
     <Subtitle>Conecta con tu red de developers.</Subtitle>
     <LoginForm />
     <Footnote>
