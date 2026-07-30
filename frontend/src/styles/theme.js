@@ -103,11 +103,13 @@ export const media = {
 const guionado = (camelCase) => camelCase.replace(/[A-Z]/g, (l) => `-${l.toLowerCase()}`);
 
 /**
- * Aplana el theme a variables CSS para el bloque :root de GlobalStyle.
- * `theme.js` sigue siendo la única fuente de verdad; esto solo lo expone
- * también como custom properties para hojas de estilo de terceros y devtools.
+ * Aplana el theme a declaraciones de custom properties CSS.
+ *
+ * Lo consume `scripts/generar-variables.js`, que escribe `styles/variables.css`.
+ * Este módulo sigue siendo la única fuente de verdad: el CSS es una proyección
+ * suya, no una segunda lista que haya que mantener en paralelo.
  */
-export const variablesCSS = () =>
+export const variablesCSS = (sangria = "  ") =>
   [
     ...Object.entries(theme.colors).map(([k, v]) => `--color-${guionado(k)}: ${v};`),
     ...Object.entries(theme.gradient).map(([k, v]) => `--gradient-${guionado(k)}: ${v};`),
@@ -118,4 +120,4 @@ export const variablesCSS = () =>
     ...[0.5, 1, 1.5, 2, 2.5, 3, 4].map(
       (f) => `--spacing-${String(f).replace(".", "-")}: ${theme.spacing(f)};`
     ),
-  ].join("\n    ");
+  ].join(`\n${sangria}`);

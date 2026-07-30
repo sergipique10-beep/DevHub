@@ -145,6 +145,27 @@ App disponible en `http://localhost:5173`.
 
 El seed crea 35 usuarios, todos con contraseña `Password123!`. Las cuentas de cada rol están en [Puesta en marcha desde cero](#puesta-en-marcha-desde-cero); la lista completa, en la hoja `usuarios` del Excel.
 
+## Sistema de estilos
+
+Los tokens de diseño —colores, espaciados, radios, sombras y tipografía— viven en un único sitio, `frontend/src/styles/theme.js`, y se exponen por dos vías:
+
+| Archivo | Qué es |
+|---|---|
+| `styles/theme.js` | Fuente de verdad. Lo consume el `ThemeProvider` de styled-components |
+| `styles/variables.css` | Las mismas 55 variables como custom properties en `:root` |
+| `styles/GlobalStyle.js` | Reset y estilos base del documento |
+| `styles/ui.js` | Componentes reutilizables: `Card`, `Button`, `Grid`, `Badge`, `Stack`, `MutedText`… |
+
+`variables.css` **se genera, no se edita a mano**. Si cambias un token en `theme.js`, regenera el archivo:
+
+```bash
+npm run tokens
+```
+
+Así no hay dos listas de colores que puedan desincronizarse. El resultado está commiteado para que se pueda abrir y leer directamente.
+
+Ningún componente escribe un color literal: todos los valores salen del theme, y las variantes con opacidad se derivan con el helper `alpha("primary", 0.25)` en lugar de repetir el `rgba` a mano.
+
 ## Roles y funcionalidades
 
 - **Freelancer:** perfil con skills y portfolio, publica servicios, envía propuestas a proyectos, recibe reviews, ve sus transacciones.

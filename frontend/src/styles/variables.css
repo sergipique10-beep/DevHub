@@ -1,0 +1,64 @@
+/*
+ * Variables de diseño: colores, espaciados, radios, sombras y tipografía.
+ *
+ * ARCHIVO GENERADO — no lo edites a mano.
+ * Fuente: src/styles/theme.js · Regenerar: npm run tokens
+ */
+
+:root {
+  --color-accent-cyan: #22d3ee;
+  --color-accent-violet: #a855f7;
+  --color-accent-blue: #3b82f6;
+  --color-primary: #38bdf8;
+  --color-primary-dark: #0ea5e9;
+  --color-primary-light: rgba(56, 189, 248, 0.14);
+  --color-secondary: #34d399;
+  --color-danger: #fb7185;
+  --color-warning: #fbbf24;
+  --color-text: #e7ebf5;
+  --color-text-muted: #94a3b8;
+  --color-on-primary: #051019;
+  --color-border: rgba(148, 163, 184, 0.18);
+  --color-border-hover: rgba(56, 189, 248, 0.45);
+  --color-background: #080b14;
+  --color-background-alt: #0d1220;
+  --color-surface: rgba(19, 24, 41, 0.72);
+  --color-surface-solid: #131829;
+  --color-hover: rgba(148, 163, 184, 0.08);
+  --color-hover-strong: rgba(148, 163, 184, 0.12);
+  --color-field: rgba(8, 11, 20, 0.55);
+  --color-danger-soft: rgba(251, 113, 133, 0.12);
+  --color-danger-tint: rgba(251, 113, 133, 0.14);
+  --color-danger-border: rgba(251, 113, 133, 0.35);
+  --color-secondary-soft: rgba(52, 211, 153, 0.14);
+  --color-warning-soft: rgba(251, 191, 36, 0.14);
+  --color-veil: rgba(8, 11, 20, 0.6);
+  --color-veil-strong: rgba(8, 11, 20, 0.88);
+  --color-veil-solid: rgba(8, 11, 20, 0.97);
+  --color-panel: rgba(19, 24, 41, 0.96);
+  --color-focus-ring: rgba(56, 189, 248, 0.25);
+  --gradient-primary: linear-gradient(135deg, #22d3ee 0%, #3b82f6 55%, #a855f7 100%);
+  --gradient-subtle: linear-gradient(135deg, rgba(56, 189, 248, 0.16) 0%, rgba(168, 85, 247, 0.16) 100%);
+  --gradient-glow: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(168, 85, 247, 0) 70%);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --shadow-raised: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --shadow-bar: 0 8px 30px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 24px rgba(56, 189, 248, 0.35);
+  --shadow-focus: 0 0 0 3px rgba(56, 189, 248, 0.25);
+  --font-heading: 'Space Grotesk', 'Sora', sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --breakpoint-mobile: 480px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1100px;
+  --spacing-0-5: 4px;
+  --spacing-1: 8px;
+  --spacing-1-5: 12px;
+  --spacing-2: 16px;
+  --spacing-2-5: 20px;
+  --spacing-3: 24px;
+  --spacing-4: 32px;
+}

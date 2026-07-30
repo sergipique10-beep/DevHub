@@ -1,11 +1,9 @@
 import { createGlobalStyle } from "styled-components";
-import { alpha, variablesCSS } from "./theme";
+import { alpha } from "./theme";
 
+// Las variables de diseño viven en styles/variables.css, que importa main.jsx.
+// Aquí solo van el reset y los estilos base.
 export const GlobalStyle = createGlobalStyle`
-  :root {
-    ${variablesCSS()}
-  }
-
   *, *::before, *::after {
     box-sizing: border-box;
   }
