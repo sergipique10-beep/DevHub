@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import LoginForm from "../components/Auth/LoginForm";
+import DemoAccessButtons from "../components/Auth/DemoAccessButtons";
 import AuthLayout from "../components/common/AuthLayout";
 import { PageTitle } from "../styles/ui";
 
@@ -26,6 +27,7 @@ const Login = () => (
     <Titulo>Inicia sesión</Titulo>
     <Subtitle>Conecta con tu red de developers.</Subtitle>
     <LoginForm />
+    <DemoAccessButtons />
     <Footnote>
       ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
     </Footnote>
